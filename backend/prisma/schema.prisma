@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
+  appointmentsAsPatient Appointment[] @relation("PatientAppointments")
+  medicalRecords        MedicalRecord[] @relation("PatientRecords")
+  availabilities        Availability[]
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  doctor    User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctorId  String
+  patient   User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  patientId String
+  datetime  DateTime
+  status    AppointmentStatus
+  createdAt DateTime @default(now())
+}
+
+model MedicalRecord {
+  id        String   @id @default(uuid())
+  patient   User     @relation("PatientRecords", fields: [patientId], references: [id])
+  patientId String
+  doctorId  String
+  date      DateTime
+  notes     String
+  diagnosis String
+  treatment String
+  createdAt DateTime @default(now())
+}
+
+model Availability {
+  id         String   @id @default(uuid())
+  doctorId   String
+  dayOfWeek  Int
+  fromHour   String
+  toHour     String
+  doctor     User     @relation(fields: [doctorId], references: [id])
+}
+
+enum Role {
+  doctor
+  patient
+}
+
+enum AppointmentStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
