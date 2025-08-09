@@ -110,7 +110,7 @@ export default function DashboardPage() {
           Dashboard del Doctor
         </h1>
         <p className="text-neutral-600 dark:text-neutral-300">
-          Bienvenido de vuelta, Dr. María González
+          Bienvenida de vuelta, Dr. Agustina Ladoux
         </p>
       </div>
 
