@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 import { 
   Calendar, 
   Users, 
@@ -23,7 +24,8 @@ export default function DashboardPage() {
       changeType: 'positive',
       icon: Calendar,
       color: 'text-primary-600',
-      bgColor: 'bg-primary-100 dark:bg-primary-900/20'
+      bgColor: 'bg-primary-100 dark:bg-primary-900/20',
+      to: '/dashboard/appointments'
     },
     {
       title: 'Pacientes Activos',
@@ -32,7 +34,8 @@ export default function DashboardPage() {
       changeType: 'positive',
       icon: Users,
       color: 'text-secondary-600',
-      bgColor: 'bg-secondary-100 dark:bg-secondary-900/20'
+      bgColor: 'bg-secondary-100 dark:bg-secondary-900/20',
+      to: '/dashboard/patients'
     },
     {
       title: 'Historias Clínicas',
@@ -41,7 +44,8 @@ export default function DashboardPage() {
       changeType: 'positive',
       icon: FileText,
       color: 'text-accent-600',
-      bgColor: 'bg-accent-100 dark:bg-accent-900/20'
+      bgColor: 'bg-accent-100 dark:bg-accent-900/20',
+      to: '/dashboard/medical-records'
     },
     {
       title: 'Ingresos Mensuales',
@@ -50,7 +54,8 @@ export default function DashboardPage() {
       changeType: 'positive',
       icon: TrendingUp,
       color: 'text-green-600',
-      bgColor: 'bg-green-100 dark:bg-green-900/20'
+      bgColor: 'bg-green-100 dark:bg-green-900/20',
+      to: '/dashboard/reports'
     }
   ];
 
@@ -117,7 +122,8 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="p-6">
+          <Link href={stat.to} key={index} className="p-6">
+            <Card>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
@@ -138,7 +144,8 @@ export default function DashboardPage() {
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
             </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -169,9 +176,11 @@ export default function DashboardPage() {
                 </span>
               </div>
             ))}
-            <Button variant="outline" className="w-full">
-              Ver todos los turnos
-            </Button>
+            <Link href="/dashboard/appointments">
+              <Button variant="outline" className="w-full" >
+                Ver todos los turnos
+              </Button>
+              </Link>
           </div>
         </Card>
 
