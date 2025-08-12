@@ -6,7 +6,7 @@ import { Theme } from '@/types';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
+  setTheme: (_theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -41,8 +41,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = (_newTheme: Theme) => {
+    setThemeState(_newTheme);
   };
 
   // Prevent hydration mismatch

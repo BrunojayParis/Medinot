@@ -2,17 +2,15 @@ import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { 
-  Calendar, 
-  Users, 
-  FileText, 
+import {
+  Calendar,
+  Users,
+  FileText,
   TrendingUp,
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle,
-  Stethoscope,
-  Activity
+  AlertCircle
 } from 'lucide-react';
 
 export default function DashboardPage() {

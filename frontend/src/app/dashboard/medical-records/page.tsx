@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { 
-  FileText, 
-  User, 
+import {
+  FileText,
+  User,
   Search,
   Filter,
   Plus,
@@ -21,11 +21,9 @@ import {
   Download,
   Upload,
   Printer,
-  Share2,
   AlertCircle,
   CheckCircle,
   Clock,
-  MapPin,
   Phone,
   Mail
 } from 'lucide-react';

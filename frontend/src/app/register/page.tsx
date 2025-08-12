@@ -62,8 +62,8 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       // Remove confirmPassword from the data sent to API
-      const { confirmPassword, ...registerData } = data;
-      await registerUser(registerData);
+      const { confirmPassword: _confirmPassword, ...registerData } = data;
+      await registerUser(registerData as any);
       
       toast.success('Registro exitoso');
       router.push('/dashboard');

@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { 
-  Users, 
-  User, 
+import {
+  Users,
+  User,
   Search,
   Filter,
   Plus,
@@ -16,21 +16,18 @@ import {
   Phone,
   Mail,
   Calendar,
-  FileText,
   Heart,
-  Activity,
   MapPin,
   XCircle,
   CheckCircle,
   AlertCircle,
-  Stethoscope,
   Clock
 } from 'lucide-react';
 
 export default function PatientsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterSpecialty, setFilterSpecialty] = useState('all');
+  const [_filterSpecialty, _setFilterSpecialty] = useState('all');
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -152,16 +149,7 @@ export default function PatientsPage() {
     }
   ];
 
-  const specialties = [
-    'Cardiología',
-    'Dermatología',
-    'Pediatría',
-    'Ortopedia',
-    'Neurología',
-    'Psiquiatría',
-    'Ginecología',
-    'Oftalmología'
-  ];
+  const _specialties = [] as string[];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
