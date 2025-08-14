@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/context/AuthContext';
+ 
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth();
+  
 
   const {
     register,
@@ -37,7 +37,15 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(json?.error || 'Error al iniciar sesión');
+      }
       toast.success('Inicio de sesión exitoso');
       router.push('/dashboard');
     } catch (error: any) {

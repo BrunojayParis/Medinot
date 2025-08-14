@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/context/AuthContext';
+ 
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { register: registerUser } = useAuth();
+  
 
   const {
     register,
@@ -61,10 +61,16 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      // Remove confirmPassword from the data sent to API
       const { confirmPassword: _confirmPassword, ...registerData } = data;
-      await registerUser(registerData as any);
-      
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(json?.error || 'Error al registrarse');
+      }
       toast.success('Registro exitoso');
       router.push('/dashboard');
     } catch (error: any) {
