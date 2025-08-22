@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { supabase } from '@/lib/supabaseClient';
  
 
 const loginSchema = z.object({
@@ -45,6 +46,14 @@ export default function LoginPage() {
       const json = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error(json?.error || 'Error al iniciar sesión');
+      }
+      // Sincroniza la sesión en el cliente para que el AuthContext detecte el login
+      const session = json?.session;
+      if (session?.access_token && session?.refresh_token) {
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
       }
       toast.success('Inicio de sesión exitoso');
       router.push('/dashboard');

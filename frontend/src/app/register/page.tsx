@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { supabase } from '@/lib/supabaseClient';
  
 
 const registerSchema = z.object({
@@ -70,6 +71,14 @@ export default function RegisterPage() {
       const json = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error(json?.error || 'Error al registrarse');
+      }
+      // Sincroniza la sesión en el cliente si vino en la respuesta
+      const session = json?.session;
+      if (session?.access_token && session?.refresh_token) {
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
       }
       toast.success('Registro exitoso');
       router.push('/dashboard');
