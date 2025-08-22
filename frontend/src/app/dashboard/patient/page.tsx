@@ -13,8 +13,7 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle,
-  MapPin
+  AlertCircle
 } from 'lucide-react';
 
 export default function PatientDashboardPage() {
