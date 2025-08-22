@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import React from 'react';
@@ -20,6 +20,9 @@ import {
 export default function PatientDashboardPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [loadingData, setLoadingData] = useState(true);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -32,26 +35,36 @@ export default function PatientDashboardPage() {
     }
   }, [user, isLoading, router]);
 
-  const upcomingAppointments = [
-    {
-      id: 1,
-      doctor: 'Dra. María González',
-      specialty: 'Cardiología',
-      date: '2024-12-15',
-      time: '14:30',
-      status: 'confirmed',
-      location: 'Consultorio 3 - Piso 2'
-    },
-    {
-      id: 2,
-      doctor: 'Dr. Carlos Rodríguez',
-      specialty: 'Dermatología',
-      date: '2024-12-20',
-      time: '10:00',
-      status: 'pending',
-      location: 'Consultorio 1 - Piso 1'
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      setLoadingData(true);
+      setFetchError(null);
+      try {
+        const res = await fetch('/api/appointments');
+        if (!res.ok) {
+          const j = await res.json().catch(() => null);
+          throw new Error(j?.error || 'Error obteniendo turnos');
+        }
+        const j = await res.json();
+        setAppointments(Array.isArray(j.appointments) ? j.appointments : []);
+      } catch (e: any) {
+        setFetchError(e.message || 'Error inesperado');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  const upcomingAppointments = useMemo(() => {
+    const now = new Date();
+    const mine = appointments.filter((a: any) => a.patientId === user?.id);
+    return mine
+      .filter((a: any) => new Date(a.datetime) > now)
+      .sort((a: any, b: any) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
+      .slice(0, 5);
+  }, [appointments, user?.id]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -126,21 +139,24 @@ export default function PatientDashboardPage() {
       {/* Upcoming appointments */}
       <Card title="Próximos Turnos">
         <div className="space-y-4">
-          {upcomingAppointments.map(app => (
+          {loadingData && (
+            <div className="text-center py-6 text-neutral-600 dark:text-neutral-400">Cargando turnos...</div>
+          )}
+          {fetchError && !loadingData && (
+            <div className="text-center py-6 text-red-600 dark:text-red-400">{fetchError}</div>
+          )}
+          {!loadingData && !fetchError && upcomingAppointments.map((app: any) => (
             <div key={app.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <div className="flex items-center space-x-3">
                 {getStatusIcon(app.status)}
                 <div>
                   <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {app.doctor}
+                    {app.doctor?.name ?? 'Profesional'}
                   </p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    {app.specialty} • {new Date(app.date).toLocaleDateString('es-ES')} {app.time}
+                    {new Date(app.datetime).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {' '}• {new Date(app.datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                   </p>
-                  <div className="flex items-center space-x-2 text-xs text-neutral-600 dark:text-neutral-400">
-                    <MapPin className="w-3 h-3" />
-                    <span>{app.location}</span>
-                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -151,8 +167,7 @@ export default function PatientDashboardPage() {
               </div>
             </div>
           ))}
-
-          {upcomingAppointments.length === 0 && (
+          {!loadingData && !fetchError && upcomingAppointments.length === 0 && (
             <div className="text-center py-6 text-neutral-600 dark:text-neutral-400">
               No tienes turnos próximos.
             </div>

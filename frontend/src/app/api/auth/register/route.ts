@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabaseServer';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
 
@@ -60,8 +61,20 @@ export async function POST(req: NextRequest) {
         },
       })
       .catch(() => null);
+
+    // If email confirmation is required in Supabase project, confirm immediately via admin
+    try {
+      const admin = getSupabaseAdmin();
+      await admin.auth.admin.updateUserById(sbUser.id, { email_confirm: true });
+    } catch (_e) {
+      // ignore if admin not configured
+    }
   }
 
-  return NextResponse.json({ user: data.user, session: data.session }, { status: 201 });
+  // Attempt to sign in after registration to ensure session is active
+  const supabaseAfter = await createSupabaseServer();
+  const { data: signInData } = await supabaseAfter.auth.signInWithPassword({ email, password });
+
+  return NextResponse.json({ user: signInData?.user ?? data.user, session: signInData?.session ?? data.session }, { status: 201 });
 }
 

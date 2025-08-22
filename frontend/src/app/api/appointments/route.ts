@@ -20,6 +20,14 @@ export async function GET() {
     where: {
       OR: [{ doctorId: prismaUser.id }, { patientId: prismaUser.id }],
     },
+    include: {
+      doctor: {
+        select: { id: true, name: true, email: true }
+      },
+      patient: {
+        select: { id: true, name: true, email: true }
+      }
+    },
     orderBy: { datetime: 'desc' },
   });
 

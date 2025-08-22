@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import React from 'react';
@@ -20,6 +20,9 @@ import {
 export default function DoctorDashboardPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [loadingData, setLoadingData] = useState(true);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -32,11 +35,37 @@ export default function DoctorDashboardPage() {
     }
   }, [user, isLoading, router]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      setLoadingData(true);
+      setFetchError(null);
+      try {
+        const res = await fetch('/api/appointments');
+        if (!res.ok) {
+          const j = await res.json().catch(() => null);
+          throw new Error(j?.error || 'Error obteniendo turnos');
+        }
+        const j = await res.json();
+        setAppointments(Array.isArray(j.appointments) ? j.appointments : []);
+      } catch (e: any) {
+        setFetchError(e.message || 'Error inesperado');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  const doctorAppointments = useMemo(() => {
+    return appointments.filter((a: any) => a.doctorId === user?.id);
+  }, [appointments, user?.id]);
+
   const stats = [
     {
-      title: 'Turnos Hoy',
-      value: '12',
-      change: '+2',
+      title: 'Turnos Totales',
+      value: String(doctorAppointments.length),
+      change: '+0',
       changeType: 'positive',
       icon: Calendar,
       color: 'text-primary-600',
@@ -44,9 +73,9 @@ export default function DoctorDashboardPage() {
       to: '/dashboard/appointments'
     },
     {
-      title: 'Pacientes Activos',
-      value: '156',
-      change: '+8',
+      title: 'Pacientes Atendidos',
+      value: String(new Set(doctorAppointments.map((a: any) => a.patientId)).size),
+      change: '+0',
       changeType: 'positive',
       icon: Users,
       color: 'text-secondary-600',
@@ -55,18 +84,18 @@ export default function DoctorDashboardPage() {
     },
     {
       title: 'Historias Clínicas',
-      value: '89',
-      change: '+5',
+      value: '—',
+      change: '+0',
       changeType: 'positive',
       icon: FileText,
       color: 'text-accent-600',
       bgColor: 'bg-accent-100 dark:bg-accent-900/20',
-      to: '/dashboard/medical-records'
+      to: '/dashboard/doctor/medical-records'
     },
     {
-      title: 'Ingresos Mensuales',
-      value: '$12,450',
-      change: '+12%',
+      title: 'Confirmados',
+      value: String(doctorAppointments.filter((a: any) => a.status === 'confirmed').length),
+      change: '+0%',
       changeType: 'positive',
       icon: TrendingUp,
       color: 'text-green-600',
@@ -75,40 +104,12 @@ export default function DoctorDashboardPage() {
     }
   ];
 
-  const recentAppointments = [
-    {
-      id: 1,
-      patient: 'Juan Pérez',
-      time: '09:00',
-      type: 'Consulta',
-      status: 'confirmed',
-      specialty: 'Cardiología'
-    },
-    {
-      id: 2,
-      patient: 'María García',
-      time: '10:30',
-      type: 'Control',
-      status: 'pending',
-      specialty: 'Cardiología'
-    },
-    {
-      id: 3,
-      patient: 'Carlos López',
-      time: '14:00',
-      type: 'Emergencia',
-      status: 'cancelled',
-      specialty: 'Cardiología'
-    },
-    {
-      id: 4,
-      patient: 'Ana Martínez',
-      time: '16:30',
-      type: 'Consulta',
-      status: 'confirmed',
-      specialty: 'Cardiología'
-    }
-  ];
+  const recentAppointments = useMemo(() => {
+    return doctorAppointments
+      .slice()
+      .sort((a: any, b: any) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime())
+      .slice(0, 5);
+  }, [doctorAppointments]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -131,7 +132,7 @@ export default function DoctorDashboardPage() {
           Dashboard del Doctor
         </h1>
         <p className="text-neutral-600 dark:text-neutral-300">
-          Bienvenida de vuelta, Dr. Agustina Ladoux
+          Bienvenida de vuelta, Dr.{user?.name}
         </p>
       </div>
 
@@ -169,30 +170,39 @@ export default function DoctorDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card title="Próximos Turnos">
           <div className="space-y-4">
-            {recentAppointments.map((appointment) => (
+            {loadingData && (
+              <div className="text-center py-6 text-neutral-600 dark:text-neutral-400">Cargando turnos...</div>
+            )}
+            {fetchError && !loadingData && (
+              <div className="text-center py-6 text-red-600 dark:text-red-400">{fetchError}</div>
+            )}
+            {!loadingData && !fetchError && recentAppointments.map((appointment: any) => (
               <div key={appointment.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                 <div className="flex items-center space-x-3">
                   {getStatusIcon(appointment.status)}
                   <div>
                     <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                      {appointment.patient}
+                      {appointment.patient?.name ?? 'Paciente'}
                     </p>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      {appointment.time} • {appointment.type}
+                      {new Date(appointment.datetime).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {' '}• {new Date(appointment.datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                   appointment.status === 'confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
                   appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                  appointment.status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
                   'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                 }`}>
                   {appointment.status === 'confirmed' ? 'Confirmado' : 
-                   appointment.status === 'pending' ? 'Pendiente' : 'Cancelado'}
+                   appointment.status === 'pending' ? 'Pendiente' :
+                   appointment.status === 'completed' ? 'Completado' : 'Cancelado'}
                 </span>
               </div>
             ))}
-            <Link href="/dashboard/appointments">
+            <Link href="/dashboard/doctor/appointments">
               <Button variant="outline" className="w-full" >
                 Ver todos los turnos
               </Button>
