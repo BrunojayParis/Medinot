@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -23,112 +23,40 @@ import {
   FileText,
   Eye
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AppointmentsPage() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [_loadingData, setLoadingData] = useState(true);
+  const [_fetchError, setFetchError] = useState<string | null>(null);
 
-  const appointments = [
-    {
-      id: 1,
-      patient: 'Juan Pérez',
-      patientEmail: 'juan.perez@email.com',
-      patientPhone: '+54 9 11 1234-5678',
-      doctor: 'Dr. María González',
-      doctorEmail: 'maria.gonzalez@medinot.com',
-      doctorPhone: '+54 9 11 9876-5432',
-      date: '2024-12-15',
-      time: '09:00',
-      duration: 30,
-      type: 'Consulta',
-      status: 'confirmed',
-      specialty: 'Cardiología',
-      notes: 'Control de presión arterial. Paciente refiere dolores de cabeza ocasionales.',
-      symptoms: 'Dolor de cabeza, fatiga',
-      location: 'Consultorio 3 - Piso 2',
-      price: 5000
-    },
-    {
-      id: 2,
-      patient: 'María García',
-      patientEmail: 'maria.garcia@email.com',
-      patientPhone: '+54 9 11 2345-6789',
-      doctor: 'Dr. Carlos Rodríguez',
-      doctorEmail: 'carlos.rodriguez@medinot.com',
-      doctorPhone: '+54 9 11 8765-4321',
-      date: '2024-12-15',
-      time: '10:30',
-      duration: 45,
-      type: 'Control',
-      status: 'pending',
-      specialty: 'Dermatología',
-      notes: 'Revisión de medicación para dermatitis atópica.',
-      symptoms: 'Erupciones en la piel',
-      location: 'Consultorio 1 - Piso 1',
-      price: 3500
-    },
-    {
-      id: 3,
-      patient: 'Carlos López',
-      patientEmail: 'carlos.lopez@email.com',
-      patientPhone: '+54 9 11 3456-7890',
-      doctor: 'Dr. María González',
-      doctorEmail: 'maria.gonzalez@medinot.com',
-      doctorPhone: '+54 9 11 9876-5432',
-      date: '2024-12-15',
-      time: '14:00',
-      duration: 60,
-      type: 'Emergencia',
-      status: 'cancelled',
-      specialty: 'Cardiología',
-      notes: 'Dolor en el pecho. Paciente canceló por emergencia familiar.',
-      symptoms: 'Dolor en el pecho, falta de aire',
-      location: 'Consultorio 3 - Piso 2',
-      price: 8000
-    },
-    {
-      id: 4,
-      patient: 'Ana Martínez',
-      patientEmail: 'ana.martinez@email.com',
-      patientPhone: '+54 9 11 4567-8901',
-      doctor: 'Dra. Ana Martínez',
-      doctorEmail: 'ana.martinez@medinot.com',
-      doctorPhone: '+54 9 11 7654-3210',
-      date: '2024-12-16',
-      time: '16:30',
-      duration: 30,
-      type: 'Consulta',
-      status: 'confirmed',
-      specialty: 'Pediatría',
-      notes: 'Primera consulta. Niño de 5 años con fiebre.',
-      symptoms: 'Fiebre, tos',
-      location: 'Consultorio 2 - Piso 1',
-      price: 4000
-    },
-    {
-      id: 5,
-      patient: 'Roberto Silva',
-      patientEmail: 'roberto.silva@email.com',
-      patientPhone: '+54 9 11 5678-9012',
-      doctor: 'Dr. Luis Fernández',
-      doctorEmail: 'luis.fernandez@medinot.com',
-      doctorPhone: '+54 9 11 6543-2109',
-      date: '2024-12-16',
-      time: '11:00',
-      duration: 45,
-      type: 'Control',
-      status: 'confirmed',
-      specialty: 'Ortopedia',
-      notes: 'Control post-operatorio de rodilla.',
-      symptoms: 'Dolor en rodilla derecha',
-      location: 'Consultorio 4 - Piso 2',
-      price: 4500
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoadingData(true);
+        setFetchError(null);
+        const res = await fetch('/api/appointments');
+        if (!res.ok) {
+          const j = await res.json().catch(() => null);
+          throw new Error(j?.error || 'Error obteniendo turnos');
+        }
+        const j = await res.json();
+        setAppointments(Array.isArray(j.appointments) ? j.appointments : []);
+      } catch (e: any) {
+        setFetchError(e.message || 'Error inesperado');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const appointmentTypes = [
     'Consulta',
@@ -183,12 +111,13 @@ export default function AppointmentsPage() {
     }
   };
 
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+  const doctorAppointments = useMemo(() => appointments.filter(a => a.doctorId === user?.id), [appointments, user?.id]);
+  const filteredAppointments = doctorAppointments.filter((appointment: any) => {
+    const patientName = (appointment.patient?.name || '').toLowerCase();
+    const matchesSearch = patientName.includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || appointment.status === filterStatus;
-    const matchesType = filterType === 'all' || appointment.type === filterType;
+    // type not available in schema yet; keep filterType UI but ignore
+    const matchesType = filterType === 'all';
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -329,7 +258,7 @@ export default function AppointmentsPage() {
                         </div>
                         <div>
                           <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                            {appointment.patient}
+                            {appointment.patient?.name ?? 'Paciente'}
                           </p>
                           <p className="text-sm text-neutral-600 dark:text-neutral-400">
                             {appointment.specialty}
@@ -341,15 +270,15 @@ export default function AppointmentsPage() {
                       <div className="flex items-center space-x-2">
                         <Stethoscope className="w-4 h-4 text-secondary-600" />
                         <span className="text-neutral-900 dark:text-neutral-100">
-                          {appointment.doctor}
+                          {user?.name}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-neutral-900 dark:text-neutral-100">
-                      {new Date(appointment.date).toLocaleDateString('es-ES')}
+                      {new Date(appointment.datetime).toLocaleDateString('es-ES')}
                     </td>
                     <td className="py-4 px-4 text-neutral-900 dark:text-neutral-100">
-                      {appointment.time}
+                      {new Date(appointment.datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td className="py-4 px-4">
                       <span className="px-2 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full">

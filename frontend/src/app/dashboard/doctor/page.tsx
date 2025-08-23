@@ -202,7 +202,7 @@ export default function DoctorDashboardPage() {
                 </span>
               </div>
             ))}
-            <Link href="/dashboard/doctor/appointments">
+            <Link href="/dashboard/appointments">
               <Button variant="outline" className="w-full" >
                 Ver todos los turnos
               </Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -27,228 +27,49 @@ import {
   Phone,
   Mail
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function MedicalRecordsPage() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPatient, setFilterPatient] = useState('all');
   const [filterDate, setFilterDate] = useState('all');
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const medicalRecords = [
-    {
-      id: 1,
-      patientId: 1,
-      patientName: 'Juan Pérez',
-      patientEmail: 'juan.perez@email.com',
-      patientPhone: '+54 9 11 1234-5678',
-      doctorId: 1,
-      doctorName: 'Dr. María González',
-      doctorSpecialty: 'Cardiología',
-      appointmentId: 1,
-      date: '2024-12-01',
-      diagnosis: 'Hipertensión arterial controlada',
-      symptoms: ['Dolor de cabeza', 'Fatiga', 'Presión elevada'],
-      treatment: 'Mantener medicación actual y control de presión arterial',
-      prescription: [
-        {
-          id: 1,
-          medication: 'Losartán',
-          dosage: '50mg',
-          frequency: '1 vez al día',
-          duration: '30 días',
-          instructions: 'Tomar por la mañana con el desayuno'
-        },
-        {
-          id: 2,
-          medication: 'Metformina',
-          dosage: '500mg',
-          frequency: '2 veces al día',
-          duration: '30 días',
-          instructions: 'Tomar con las comidas principales'
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoadingData(true);
+        setFetchError(null);
+        const res = await fetch('/api/medical-records');
+        if (!res.ok) {
+          const j = await res.json().catch(() => null);
+          throw new Error(j?.error || 'Error obteniendo historias clínicas');
         }
-      ],
-      vitalSigns: {
-        bloodPressure: '130/85 mmHg',
-        heartRate: '72 bpm',
-        temperature: '36.8°C',
-        weight: '75 kg',
-        height: '175 cm'
-      },
-      notes: 'Paciente presenta mejor control de la presión arterial. Mantener seguimiento mensual. Recomendar dieta baja en sodio y ejercicio regular.',
-      followUpDate: '2024-12-15',
-      status: 'completed',
-      attachments: ['analisis_sangre.pdf', 'ecg_resultado.pdf']
-    },
-    {
-      id: 2,
-      patientId: 2,
-      patientName: 'María García',
-      patientEmail: 'maria.garcia@email.com',
-      patientPhone: '+54 9 11 2345-6789',
-      doctorId: 2,
-      doctorName: 'Dr. Carlos Rodríguez',
-      doctorSpecialty: 'Dermatología',
-      appointmentId: 2,
-      date: '2024-11-28',
-      diagnosis: 'Dermatitis atópica en mejora',
-      symptoms: ['Erupciones en la piel', 'Picazón', 'Enrojecimiento'],
-      treatment: 'Continuar con tratamiento tópico y evitar factores desencadenantes',
-      prescription: [
-        {
-          id: 3,
-          medication: 'Hidrocortisona 1%',
-          dosage: 'Crema',
-          frequency: '2 veces al día',
-          duration: '14 días',
-          instructions: 'Aplicar en las zonas afectadas'
-        },
-        {
-          id: 4,
-          medication: 'Cetirizina',
-          dosage: '10mg',
-          frequency: '1 vez al día',
-          duration: '7 días',
-          instructions: 'Tomar por la noche'
-        }
-      ],
-      vitalSigns: {
-        bloodPressure: '120/80 mmHg',
-        heartRate: '68 bpm',
-        temperature: '36.5°C',
-        weight: '60 kg',
-        height: '165 cm'
-      },
-      notes: 'Significativa mejora en la dermatitis. Las erupciones han disminuido notablemente. Continuar con el tratamiento y evitar contacto con alérgenos.',
-      followUpDate: '2024-12-20',
-      status: 'completed',
-      attachments: ['biopsia_piel.pdf']
-    },
-    {
-      id: 3,
-      patientId: 3,
-      patientName: 'Carlos López',
-      patientEmail: 'carlos.lopez@email.com',
-      patientPhone: '+54 9 11 3456-7890',
-      doctorId: 1,
-      doctorName: 'Dr. María González',
-      doctorSpecialty: 'Cardiología',
-      appointmentId: 3,
-      date: '2024-10-15',
-      diagnosis: 'Dolor torácico de origen musculoesquelético',
-      symptoms: ['Dolor en el pecho', 'Falta de aire', 'Ansiedad'],
-      treatment: 'Tratamiento conservador y seguimiento cardiológico',
-      prescription: [
-        {
-          id: 5,
-          medication: 'Aspirina',
-          dosage: '100mg',
-          frequency: '1 vez al día',
-          duration: '30 días',
-          instructions: 'Tomar por la mañana'
-        }
-      ],
-      vitalSigns: {
-        bloodPressure: '140/90 mmHg',
-        heartRate: '85 bpm',
-        temperature: '37.0°C',
-        weight: '80 kg',
-        height: '180 cm'
-      },
-      notes: 'Paciente canceló última cita. Requiere seguimiento urgente para evaluar evolución del dolor torácico. Considerar estudios adicionales.',
-      followUpDate: null,
-      status: 'pending',
-      attachments: ['radiografia_torax.pdf', 'ecg_urgencia.pdf']
-    },
-    {
-      id: 4,
-      patientId: 4,
-      patientName: 'Ana Martínez',
-      patientEmail: 'ana.martinez@email.com',
-      patientPhone: '+54 9 11 4567-8901',
-      doctorId: 3,
-      doctorName: 'Dra. Ana Martínez',
-      doctorSpecialty: 'Pediatría',
-      appointmentId: 4,
-      date: '2024-12-05',
-      diagnosis: 'Fiebre recurrente de origen viral',
-      symptoms: ['Fiebre', 'Tos', 'Decaimiento'],
-      treatment: 'Tratamiento sintomático y observación',
-      prescription: [
-        {
-          id: 6,
-          medication: 'Paracetamol',
-          dosage: '250mg',
-          frequency: 'Cada 6 horas',
-          duration: '5 días',
-          instructions: 'Solo si hay fiebre mayor a 38°C'
-        }
-      ],
-      vitalSigns: {
-        bloodPressure: '90/60 mmHg',
-        heartRate: '95 bpm',
-        temperature: '38.2°C',
-        weight: '18 kg',
-        height: '110 cm'
-      },
-      notes: 'Niña de 5 años con fiebre recurrente. Evaluar causas subyacentes. Mantener hidratación adecuada y reposo.',
-      followUpDate: '2024-12-16',
-      status: 'completed',
-      attachments: ['analisis_sangre_nino.pdf']
-    },
-    {
-      id: 5,
-      patientId: 5,
-      patientName: 'Roberto Silva',
-      patientEmail: 'roberto.silva@email.com',
-      patientPhone: '+54 9 11 5678-9012',
-      doctorId: 4,
-      doctorName: 'Dr. Luis Fernández',
-      doctorSpecialty: 'Ortopedia',
-      appointmentId: 5,
-      date: '2024-11-20',
-      diagnosis: 'Artritis de rodilla derecha post-operatoria',
-      symptoms: ['Dolor en rodilla', 'Rigidez', 'Limitación de movimiento'],
-      treatment: 'Fisioterapia y medicación antiinflamatoria',
-      prescription: [
-        {
-          id: 7,
-          medication: 'Ibuprofeno',
-          dosage: '400mg',
-          frequency: '3 veces al día',
-          duration: '10 días',
-          instructions: 'Tomar con las comidas'
-        },
-        {
-          id: 8,
-          medication: 'Enalapril',
-          dosage: '10mg',
-          frequency: '1 vez al día',
-          duration: '30 días',
-          instructions: 'Tomar por la mañana'
-        }
-      ],
-      vitalSigns: {
-        bloodPressure: '135/85 mmHg',
-        heartRate: '70 bpm',
-        temperature: '36.7°C',
-        weight: '78 kg',
-        height: '172 cm'
-      },
-      notes: 'Paciente post-operatorio de rodilla. Recuperación favorable. Continuar con fisioterapia y ejercicios de rehabilitación.',
-      followUpDate: '2024-12-16',
-      status: 'completed',
-      attachments: ['radiografia_rodilla.pdf', 'informe_fisioterapia.pdf']
-    }
-  ];
+        const j = await res.json();
+        setMedicalRecords(Array.isArray(j.records) ? j.records : []);
+      } catch (e: any) {
+        setFetchError(e.message || 'Error inesperado');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-  const patients = [
-    { id: 1, name: 'Juan Pérez' },
-    { id: 2, name: 'María García' },
-    { id: 3, name: 'Carlos López' },
-    { id: 4, name: 'Ana Martínez' },
-    { id: 5, name: 'Roberto Silva' }
-  ];
+  const doctorRecords = useMemo(() => medicalRecords.filter((r: any) => r.doctorId === user?.id), [medicalRecords, user?.id]);
+
+  const patients = useMemo(() => {
+    const set = new Map<string, string>();
+    doctorRecords.forEach((r: any) => {
+      if (r.patient) set.set(r.patient.id, r.patient.name || r.patient.email || 'Paciente');
+    });
+    return Array.from(set.entries()).map(([id, name]) => ({ id, name }));
+  }, [doctorRecords]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -289,12 +110,15 @@ export default function MedicalRecordsPage() {
     }
   };
 
-  const filteredRecords = medicalRecords.filter(record => {
-    const matchesSearch = record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.doctorName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPatient = filterPatient === 'all' || record.patientId.toString() === filterPatient;
-    const matchesDate = filterDate === 'all' || record.date.includes(filterDate);
+  const getStatusForRecord = (_record: any): 'completed' | 'pending' | 'cancelled' => 'completed';
+
+  const filteredRecords = doctorRecords.filter((record: any) => {
+    const patientName = (record.patient?.name || '').toLowerCase();
+    const matchesSearch = patientName.includes(searchTerm.toLowerCase()) ||
+      (record.diagnosis || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPatient = filterPatient === 'all' || record.patientId === filterPatient;
+    const dateStr = typeof record.date === 'string' ? record.date : new Date(record.date).toISOString();
+    const matchesDate = filterDate === 'all' || dateStr.startsWith(filterDate);
     return matchesSearch && matchesPatient && matchesDate;
   });
 
@@ -356,7 +180,7 @@ export default function MedicalRecordsPage() {
                 Total Historias
               </p>
               <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {medicalRecords.length}
+                {filteredRecords.length}
               </p>
             </div>
             <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
@@ -372,7 +196,7 @@ export default function MedicalRecordsPage() {
                 Completadas
               </p>
               <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {medicalRecords.filter(r => r.status === 'completed').length}
+                {filteredRecords.filter((r: any) => getStatusForRecord(r) === 'completed').length}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
@@ -388,7 +212,7 @@ export default function MedicalRecordsPage() {
                 Pendientes
               </p>
               <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {medicalRecords.filter(r => r.status === 'pending').length}
+                {filteredRecords.filter((r: any) => getStatusForRecord(r) === 'pending').length}
               </p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
@@ -404,7 +228,7 @@ export default function MedicalRecordsPage() {
                 Este Mes
               </p>
               <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {medicalRecords.filter(r => r.date.startsWith('2024-12')).length}
+                {filteredRecords.filter((r: any) => (typeof r.date === 'string' ? r.date : new Date(r.date).toISOString()).startsWith('2024-12')).length}
               </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
@@ -488,7 +312,17 @@ export default function MedicalRecordsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredRecords.map((record) => (
+              {loadingData && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-neutral-600 dark:text-neutral-400">Cargando...</td>
+                </tr>
+              )}
+              {fetchError && !loadingData && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-red-600 dark:text-red-400">{fetchError}</td>
+                </tr>
+              )}
+              {!loadingData && !fetchError && filteredRecords.map((record: any) => (
                 <tr key={record.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                   <td className="py-4 px-4">
                     <div className="flex items-center space-x-3">
@@ -497,7 +331,7 @@ export default function MedicalRecordsPage() {
                       </div>
                       <div>
                         <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                          {record.patientName}
+                          {record.patient?.name ?? 'Paciente'}
                         </p>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400">
                           ID: {record.patientId}
@@ -510,10 +344,10 @@ export default function MedicalRecordsPage() {
                       <Stethoscope className="w-4 h-4 text-secondary-600" />
                       <div>
                         <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          {record.doctorName}
+                          {user?.name}
                         </p>
                         <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {record.doctorSpecialty}
+                          —
                         </p>
                       </div>
                     </div>
@@ -527,15 +361,15 @@ export default function MedicalRecordsPage() {
                         {record.diagnosis}
                       </p>
                       <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                        {record.symptoms.length} síntomas
+                        {(record.symptoms || []).length} síntomas
                       </p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center space-x-2">
-                      {getStatusIcon(record.status)}
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(record.status)}`}>
-                        {getStatusText(record.status)}
+                      {getStatusIcon(getStatusForRecord(record))}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(getStatusForRecord(record))}`}>
+                        {getStatusText(getStatusForRecord(record))}
                       </span>
                     </div>
                   </td>
