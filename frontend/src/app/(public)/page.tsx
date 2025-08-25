@@ -218,50 +218,13 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 dark:bg-black text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">Medinot</span>
-              </div>
-              <p className="text-neutral-400">
-                Plataforma integral para la gestión médica moderna.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Producto</h3>
-              <ul className="space-y-2 text-neutral-400">
-                <li><a href="#" className="hover:text-white transition-colors">Características</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Precios</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Seguridad</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Soporte</h3>
-              <ul className="space-y-2 text-neutral-400">
-                <li><a href="#" className="hover:text-white transition-colors">Ayuda</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contacto</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentación</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-neutral-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacidad</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Términos</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-neutral-400">
-            <p>&copy; 2024 Medinot. Todos los derechos reservados.</p>
-          </div>
-        </div>
+      <footer className="py-8 text-center text-neutral-600 dark:text-neutral-400">
+        <p>
+          © {new Date().getFullYear()} Medinot. Todos los derechos reservados.
+        </p>
       </footer>
     </div>
   );
-} 
+}
+
+

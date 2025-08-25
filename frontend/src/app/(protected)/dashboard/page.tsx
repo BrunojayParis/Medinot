@@ -20,3 +20,5 @@ export default function DashboardIndexRedirect() {
 
   return null;
 }
+
+

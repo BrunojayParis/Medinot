@@ -298,28 +298,21 @@ export default function RegisterPage() {
               </span>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              loading={isLoading}
-            >
-              Crear Cuenta
+            <Button type="submit" className="w-full" loading={isLoading}>
+              Crear cuenta
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-neutral-600 dark:text-neutral-300">
-              ¿Ya tienes una cuenta?{' '}
-              <Link
-                href="/login"
-                className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-              >
-                Inicia sesión aquí
-              </Link>
-            </p>
-          </div>
         </Card>
+
+        <div className="mt-6 text-center text-sm text-neutral-600 dark:text-neutral-300">
+          ¿Ya tienes cuenta?{' '}
+          <Link href="/login" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
+            Iniciar sesión
+          </Link>
+        </div>
       </div>
     </div>
   );
-} 
+}
+
+

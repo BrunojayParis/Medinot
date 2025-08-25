@@ -70,7 +70,7 @@ export default function DoctorDashboardPage() {
       icon: Calendar,
       color: 'text-primary-600',
       bgColor: 'bg-primary-100 dark:bg-primary-900/20',
-      to: '/dashboard/appointments'
+      to: '/dashboard/doctor/appointments'
     },
     {
       title: 'Pacientes Atendidos',
@@ -80,7 +80,7 @@ export default function DoctorDashboardPage() {
       icon: Users,
       color: 'text-secondary-600',
       bgColor: 'bg-secondary-100 dark:bg-secondary-900/20',
-      to: '/dashboard/patients'
+      to: '/dashboard/doctor/patients'
     },
     {
       title: 'Historias Clínicas',
@@ -100,7 +100,7 @@ export default function DoctorDashboardPage() {
       icon: TrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-100 dark:bg-green-900/20',
-      to: '/dashboard/reports'
+      to: '/dashboard/doctor/reports'
     }
   ];
 
@@ -202,7 +202,7 @@ export default function DoctorDashboardPage() {
                 </span>
               </div>
             ))}
-            <Link href="/dashboard/appointments">
+            <Link href="/dashboard/doctor/appointments">
               <Button variant="outline" className="w-full" >
                 Ver todos los turnos
               </Button>
