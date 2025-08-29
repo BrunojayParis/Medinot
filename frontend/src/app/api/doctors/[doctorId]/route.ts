@@ -4,14 +4,14 @@ import { getServerSession } from '@/lib/supabaseServer';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { doctorId: string } }
+  context: { params: Promise<{ doctorId: string }> }
 ) {
   const { session } = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { doctorId } = params;
+  const { doctorId } = await context.params;
   if (!doctorId) {
     return NextResponse.json({ error: 'Falta doctorId' }, { status: 400 });
   }

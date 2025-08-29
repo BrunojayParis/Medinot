@@ -4,14 +4,14 @@ import { getServerSession } from '@/lib/supabaseServer';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { appointmentId: string } }
+  context: { params: Promise<{ appointmentId: string }> }
 ) {
   const { session } = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { appointmentId } = params;
+  const { appointmentId } = await context.params;
   if (!appointmentId) {
     return NextResponse.json({ error: 'Falta appointmentId' }, { status: 400 });
   }
