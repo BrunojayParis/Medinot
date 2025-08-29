@@ -1,5 +1,45 @@
-export default function Page() {
-  return <div>Pendiente de implementación</div>;
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getServerSession } from '@/lib/supabaseServer';
+import { absoluteUrl, authHeaders } from '@/lib/request';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+
+export default async function Page() {
+  const { session } = await getServerSession();
+  if (!session) redirect('/login');
+
+  const res = await fetch(await absoluteUrl('/api/patients'), { cache: 'no-store', headers: await authHeaders() });
+  if (!res.ok) {
+    if (res.status === 401) redirect('/login');
+    throw new Error('Error cargando pacientes');
+  }
+  const { patients } = await res.json();
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Pacientes</h1>
+      {patients?.length ? (
+        <div className="grid grid-cols-1 gap-3">
+          {patients.map((p: any) => (
+            <Card key={p.id} className="transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{p.name}</div>
+                  <div className="text-sm text-gray-600">{p.email}</div>
+                </div>
+                <Link href={`/dashboard/doctor/patients/${p.id}`}>
+                  <Button size="sm" variant="outline">Ver</Button>
+                </Link>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="text-sm text-neutral-600">No hay pacientes.</Card>
+      )}
+    </div>
+  );
 }
 
 
