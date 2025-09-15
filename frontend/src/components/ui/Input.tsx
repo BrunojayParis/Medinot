@@ -15,7 +15,8 @@ export function Input({
   id,
   ...props
 }: InputProps) {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const autoId = React.useId();
+  const inputId = id || autoId;
 
   return (
     <div className="space-y-2">

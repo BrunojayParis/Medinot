@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -25,6 +25,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const search = useSearchParams();
   
 
   const {
@@ -55,8 +56,9 @@ export default function LoginPage() {
           refresh_token: session.refresh_token,
         });
       }
-      toast.success('Inicio de sesión exitoso');
-      router.push('/dashboard');
+      const afterBooking = search.get('afterBooking');
+      toast.success(afterBooking ? 'Turno solicitado. Completa tu sesión para gestionarlo.' : 'Inicio de sesión exitoso');
+      router.push(afterBooking ? '/dashboard/appointments' : '/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Error al iniciar sesión');
     } finally {

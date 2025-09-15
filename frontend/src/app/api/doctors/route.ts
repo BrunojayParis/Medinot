@@ -3,11 +3,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from '@/lib/supabaseServer';
 
 export async function GET() {
-  const { session } = await getServerSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+  // Public endpoint: list doctors without requiring auth
   const doctors = await prisma.user.findMany({
     where: { role: 'doctor' },
     select: { id: true, name: true, email: true },

@@ -105,9 +105,9 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link href="#features">
+            <Link href="/appointments/new">
               <Button variant="outline" size="lg" className="text-lg px-8 py-4">
-                Conocer Más
+                Solicitar turno
               </Button>
             </Link>
           </div>
