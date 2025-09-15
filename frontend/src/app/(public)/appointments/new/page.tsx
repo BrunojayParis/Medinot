@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { absoluteUrl } from '@/lib/request';
@@ -33,27 +34,22 @@ export default async function PublicNewAppointmentPage() {
       <h1 className="text-xl font-semibold">Solicitar nuevo turno</h1>
       <Card className="p-4">
         <form action={createPublicAppointment} className="space-y-3">
-          <div className="space-y-1">
-            <label className="block text-sm">Profesional</label>
-            <select name="doctorId" className="border rounded p-2 w-full" required>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Profesional</label>
+            <select
+              name="doctorId"
+              className="block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-dark-surface dark:text-neutral-100 dark:placeholder-neutral-400 dark:focus:border-primary-400 dark:focus:ring-primary-400"
+              required
+            >
               <option value="">Seleccione un profesional</option>
               {doctors?.map((d: any) => (
                 <option key={d.id} value={d.id}>{d.name} ({d.email})</option>
               ))}
             </select>
           </div>
-          <div className="space-y-1">
-            <label className="block text-sm">Fecha y hora</label>
-            <input className="border rounded p-2 w-full" type="datetime-local" name="datetime" required />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-sm">Tu nombre</label>
-            <input className="border rounded p-2 w-full" type="text" name="name" required />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-sm">Tu email</label>
-            <input className="border rounded p-2 w-full" type="email" name="email" required />
-          </div>
+          <Input label="Fecha y hora" type="datetime-local" name="datetime" required />
+          <Input label="Tu nombre" type="text" name="name" required />
+          <Input label="Tu email" type="email" name="email" required />
           <div className="flex items-center gap-2">
             <Button type="submit" className="px-4">Solicitar turno</Button>
             <Link href="/" className="text-sm text-neutral-600">Cancelar</Link>
